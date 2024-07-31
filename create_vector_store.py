@@ -6,17 +6,33 @@ DATA_PATH = os.path.join('data','scriptures.txt')
 EMBEDDINGS_MODEL = 'nomic-embed-text'
 CHROMA_PATH = "chroma_dir"
 COLLECTION_NAME = "verses"
+NUM_VERSES_IN_DOC = 4
 
 def parse_scriptures(fp):
     """Get each verse in the scriptures"""
     documents = []
     ids = []
     file = open(fp, 'r')
-
+    current_document_set = []
+    current_ids_set = []
     for line in file:
-        documents.append(line.split("     ")[1])
-        ids.append(line.split("     ")[0])
+        current_id = line.split("     ")[0]
+        if (len(current_ids_set) > 0) and (current_ids_set[-1].split(":")[0] != current_id.split(":")[0]): ## We got to a new book, no need to combine verses
+            current_document_set = []
+            current_ids_set = []
+        current_document_set.append(line.split("     ")[1])
+        current_ids_set.append(current_id)
+
+        
+        if len(current_document_set) == NUM_VERSES_IN_DOC:
+            documents.append("\n".join(current_document_set))
+            ids.append(current_ids_set[0] + "-" + current_ids_set[-1].split(":")[1])
+            current_ids_set.pop(0)
+            current_document_set.pop(0)
+            
+
     return (documents, ids)
+
 
 def get_chroma_collection(chroma_path):
     """Get the relevant collection"""
