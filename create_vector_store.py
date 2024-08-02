@@ -1,11 +1,7 @@
 import os
 import chromadb
 import ollama
-
-DATA_PATH = os.path.join('data','scriptures.txt')
-EMBEDDINGS_MODEL = 'nomic-embed-text'
-CHROMA_PATH = "chroma_dir"
-COLLECTION_NAME = "verses"
+from config import DATA_PATH, EMBEDDINGS_MODEL, CHROMA_PATH, COLLECTION_NAME
 NUM_VERSES_IN_DOC = 4
 
 def parse_scriptures(fp):

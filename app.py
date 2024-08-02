@@ -11,7 +11,7 @@ import os
 from config import OPENAI_API_KEY
 
 from llm_retrieval import get_scriptures_string, get_all_scriptures
-from create_vector_store import DATA_PATH
+from config import DATA_PATH
 
 scripture_dict = get_all_scriptures(DATA_PATH)
 
