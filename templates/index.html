@@ -24,9 +24,10 @@
       {% endfor %}
     </div>
     <div class="message-input-container">
-      <form action="/chat" method="post">
+      <form action="/chat" id="chat-form" method="post">
         <textarea
           name="message"
+          id="message-input"
           placeholder="Enter a Scripture Question..."
           required
         ></textarea>
@@ -36,107 +37,225 @@
       </form>
     </div>
     <script>
-      document
-        .querySelector("form")
-        .addEventListener("submit", function (event) {
-          event.preventDefault();
-          const messageInput = document.querySelector(
-            'textarea[name="message"]'
-          );
-          const message = messageInput.value.trim();
-          const chatContainer = document.querySelector(".chat-container");
+        document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const messageInput = document.querySelector('textarea[name="message"]');
+    const chatContainer = document.querySelector(".chat-container");
 
-          // Append the user's message to the chat container
-          if (message) {
-            const roleDiv = document.createElement("div");
-            roleDiv.classList.add("message-role");
-            roleDiv.classList.add("user");
+    function scrollToBottom() {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
 
-            roleDiv.textContent = "User";
-            chatContainer.appendChild(roleDiv);
+    // Handle form submission
+    form.addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent the default form submission
+
+        const message = messageInput.value.trim();
+        if (message) {
+            // Append the user's message to the chat container
+            const userRoleDiv = document.createElement("div");
+            userRoleDiv.classList.add("message-role", "user");
+            userRoleDiv.textContent = "User";
+            chatContainer.appendChild(userRoleDiv);
 
             const userMessageDiv = document.createElement("div");
             userMessageDiv.classList.add("user-message");
             userMessageDiv.textContent = message;
             chatContainer.appendChild(userMessageDiv);
-          }
 
-          // Clear the message input
-          messageInput.value = "";
+            // Clear the message input
+            messageInput.value = "";
 
-          // Send the user's message to the server using AJAX
-          fetch("/chat", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ message: message }),
-          })
-            .then((response) => response.json())
-            .then((data) => {
-              if (data.success) {
-                const roleDiv = document.createElement("div");
-                roleDiv.classList.add("message-role");
-                roleDiv.classList.add("assistant");
+            // Scroll to the bottom of the chat container
+            scrollToBottom();
 
-                roleDiv.textContent = "Scripture Helper";
-                chatContainer.appendChild(roleDiv);
+            // Send the user's message to the server using AJAX
+            fetch("/chat", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ message: message }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const assistantRoleDiv = document.createElement("div");
+                    assistantRoleDiv.classList.add("message-role", "assistant");
+                    assistantRoleDiv.textContent = "Scripture Helper";
+                    chatContainer.appendChild(assistantRoleDiv);
 
-                // Prepare the assistant's message container
-                const assistantMessageDiv = document.createElement("div");
-                assistantMessageDiv.classList.add("assistant-message");
-                chatContainer.appendChild(assistantMessageDiv);
+                    // Prepare the assistant's message container
+                    const assistantMessageDiv = document.createElement("div");
+                    assistantMessageDiv.classList.add("assistant-message");
+                    chatContainer.appendChild(assistantMessageDiv);
 
-                // Open a connection to receive streamed responses
-                const eventSource = new EventSource("/stream");
-                eventSource.onmessage = function (event) {
-                // Append new text as HTML to the assistant message container
-                //assistantMessageDiv.innerHTML += event.data;
+                    // Open a connection to receive streamed responses
+                    const eventSource = new EventSource("/stream");
+                    eventSource.onmessage = function(event) {
+                        const currentText = assistantMessageDiv.innerHTML;
+                        const newText = event.data;
+                        const lastChar = currentText.slice(-1);
 
-                  const currentText = assistantMessageDiv.innerHTML;
-                  const newText = event.data;
-                  const lastChar = currentText.slice(-1);
+                        // Check if we need to add a space (streamed chunks might be missing it)
+                        if (/[.,!?]/.test(lastChar) && newText.charAt(0) !== " ") {
+                            assistantMessageDiv.innerHTML += " " + newText;
+                        } else {
+                            assistantMessageDiv.innerHTML += newText;
+                        }
 
-                  // Check if we need to add a space (streamed chunks might be missing it)
-                  if (/[.,!?]/.test(lastChar) && newText.charAt(0) !== " ") {
-                    assistantMessageDiv.innerHTML += " " + newText;
-                  } else {
-                    assistantMessageDiv.innerHTML += newText;
-                  }
-
-                  // Scroll to the bottom of the chat container
-                  chatContainer.scrollTop = chatContainer.scrollHeight;
-                };
-                eventSource.onerror = function () {
-                  eventSource.close();
-                };
-              }
+                        // Scroll to the bottom of the chat container
+                        scrollToBottom();
+                    };
+                    eventSource.onerror = function() {
+                        eventSource.close();
+                    };
+                }
+            })
+            .catch(error => {
+                console.error('Error sending message:', error);
             });
-        });
+        }
+    });
 
-      // Add event listener for the clear button
-      document
-        .getElementById("clear-btn")
-        .addEventListener("click", function () {
-          // Clear the chat container
-          const chatContainer = document.querySelector(".chat-container");
-          chatContainer.innerHTML = "";
+    // Handle Enter key press in the textarea
+    messageInput.addEventListener('keypress', function(event) {
+        if (event.key === 'Enter' && !event.shiftKey) { // Check if Enter is pressed without Shift
+            event.preventDefault(); // Prevent the default newline behavior
+            form.requestSubmit(); // Trigger form submission
+        }
+    });
 
-          // Re-insert the initial system message as an assistant message
-          const systemMessageDiv = document.createElement("div");
-          systemMessageDiv.classList.add("assistant-message"); // Use the assistant message class
-          systemMessageDiv.textContent = "You are a helpful assistant.";
-          chatContainer.appendChild(systemMessageDiv);
+    // Add event listener for the clear button
+    document.getElementById("clear-btn").addEventListener("click", function() {
+        // Clear the chat container
+        chatContainer.innerHTML = "";
 
-          // Reset the chat history on the server
-          fetch("/reset", {
+        // Re-insert the initial system message as an assistant message
+        const systemMessageDiv = document.createElement("div");
+        systemMessageDiv.classList.add("assistant-message"); // Use the assistant message class
+        systemMessageDiv.textContent = "You are a helpful assistant.";
+        chatContainer.appendChild(systemMessageDiv);
+
+        // Reset the chat history on the server
+        fetch("/reset", {
             method: "POST",
-          }).then((response) => {
+        }).then(response => {
             if (response.ok) {
-              console.log("Chat history has been reset.");
+                console.log("Chat history has been reset.");
             }
-          });
         });
+    });
+});document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const messageInput = document.querySelector('textarea[name="message"]');
+    const chatContainer = document.querySelector(".chat-container");
+
+    function scrollToBottom() {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    // Handle form submission
+    form.addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent the default form submission
+
+        const message = messageInput.value.trim();
+        if (message) {
+            // Append the user's message to the chat container
+            const userRoleDiv = document.createElement("div");
+            userRoleDiv.classList.add("message-role", "user");
+            userRoleDiv.textContent = "User";
+            chatContainer.appendChild(userRoleDiv);
+
+            const userMessageDiv = document.createElement("div");
+            userMessageDiv.classList.add("user-message");
+            userMessageDiv.textContent = message;
+            chatContainer.appendChild(userMessageDiv);
+
+            // Clear the message input
+            messageInput.value = "";
+
+            // Scroll to the bottom of the chat container
+            scrollToBottom();
+
+            // Send the user's message to the server using AJAX
+            fetch("/chat", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ message: message }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const assistantRoleDiv = document.createElement("div");
+                    assistantRoleDiv.classList.add("message-role", "assistant");
+                    assistantRoleDiv.textContent = "Scripture Helper";
+                    chatContainer.appendChild(assistantRoleDiv);
+
+                    // Prepare the assistant's message container
+                    const assistantMessageDiv = document.createElement("div");
+                    assistantMessageDiv.classList.add("assistant-message");
+                    chatContainer.appendChild(assistantMessageDiv);
+
+                    // Open a connection to receive streamed responses
+                    const eventSource = new EventSource("/stream");
+                    eventSource.onmessage = function(event) {
+                        const currentText = assistantMessageDiv.innerHTML;
+                        const newText = event.data;
+                        const lastChar = currentText.slice(-1);
+
+                        // Check if we need to add a space (streamed chunks might be missing it)
+                        if (/[.,!?]/.test(lastChar) && newText.charAt(0) !== " ") {
+                            assistantMessageDiv.innerHTML += " " + newText;
+                        } else {
+                            assistantMessageDiv.innerHTML += newText;
+                        }
+
+                        // Scroll to the bottom of the chat container
+                        scrollToBottom();
+                    };
+                    eventSource.onerror = function() {
+                        eventSource.close();
+                    };
+                }
+            })
+            .catch(error => {
+                console.error('Error sending message:', error);
+            });
+        }
+    });
+
+    // Handle Enter key press in the textarea
+    messageInput.addEventListener('keypress', function(event) {
+        if (event.key === 'Enter' && !event.shiftKey) { // Check if Enter is pressed without Shift
+            event.preventDefault(); // Prevent the default newline behavior
+            form.requestSubmit(); // Trigger form submission
+        }
+    });
+
+    // Add event listener for the clear button
+    document.getElementById("clear-btn").addEventListener("click", function() {
+        // Clear the chat container
+        chatContainer.innerHTML = "";
+
+        // Re-insert the initial system message as an assistant message
+        const systemMessageDiv = document.createElement("div");
+        systemMessageDiv.classList.add("assistant-message"); // Use the assistant message class
+        systemMessageDiv.textContent = "You are a helpful assistant.";
+        chatContainer.appendChild(systemMessageDiv);
+
+        // Reset the chat history on the server
+        fetch("/reset", {
+            method: "POST",
+        }).then(response => {
+            if (response.ok) {
+                console.log("Chat history has been reset.");
+            }
+        });
+    });
+});
     </script>
   </body>
 </html>
