@@ -21,6 +21,7 @@ def get_all_scriptures(fp):
         
 def get_scriptures_string(scripture_dict, question, generative_model):
     verses = get_verse_references(question, generative_model)
+    print(verses)
     output_string = ""
     for v in verses:
  
@@ -54,7 +55,7 @@ def get_verse_references(question, generative_model):
 
     Choose scriptures that are highly relevant to the question at hand. 
 
-    Return a list of five to ten scripture references to answer the question. Each reference should be on its own line in the format <book> <chapter>:<verse>. Do not include the actual text of the scripture in your response. 
+    Return a list of five to ten scripture references to answer the question. Each reference should be on its own line in the format <book> <chapter>:<verse>. Do not include the actual text of the scripture in your response. Do not include any numbers or other symbols prior to the scripture reference. 
 
     """
     
