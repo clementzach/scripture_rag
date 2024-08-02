@@ -7,7 +7,7 @@ os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
 
 
 def sanitize_reference(input_str):
-    return re.sub("\s", "", input_str).lower()
+    return re.sub(r"\s", "", input_str).lower()
 
 def get_all_scriptures(fp):
     """Parse the scriptures.txt file into a dict"""

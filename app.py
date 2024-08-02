@@ -73,8 +73,8 @@ def chat():
     unique_id = request.cookies.get('user_id')
     if not unique_id:
         return jsonify(success=False, message="User not identified")
-    question = request.json["message"]
     chat_history = get_chat_history(unique_id)
+    question = request.json["message"]
     chat_history.append({"role": "user", "content": question})
     scriptures_string = get_scriptures_string(scripture_dict, question, GENERATIVE_MODEL)
     assistant_content = "Here are some scriptures that may be helpful:\n" + scriptures_string
@@ -127,8 +127,7 @@ def reset_chat():
     unique_id = request.cookies.get('user_id')
     if not unique_id:
         return jsonify(success=False, message="User not identified")
-
-    set_chat_history(unique_id,[{"role": "system", "content": sys_prompt}])
+    _ = get_chat_history(unique_id)
     return jsonify(success=True)
 
 @app.route('/logout')
