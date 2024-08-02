@@ -1,3 +1,4 @@
+import os
 OPENAI_API_KEY=''
 
 DATA_PATH = os.path.join('data','scriptures.txt')
