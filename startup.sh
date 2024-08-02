@@ -2,7 +2,7 @@ python3 -m venv ollama_env
 
 ## Download required packages
 source ollama_env/bin/activate
-pip install llama-index-embeddings-openai langchain-chroma ollama flask
+pip install -r requirements.txt
 
 ## Download the raw data
 mkdir data
