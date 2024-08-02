@@ -19,6 +19,8 @@ RUN pip install -r requirements.txt
 COPY app.py .
 COPY llm_retrieval.py .
 COPY config.py . 
+COPY templates/index.html ./templates/index.html
+COPY static/main.css ./static/main.css
 
 # Specify the command to run on container start
 CMD [ "python", "./app.py" ]
