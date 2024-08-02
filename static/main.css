@@ -87,6 +87,7 @@ h3 {
   height: auto;
   box-sizing: border-box;
   align-items: start;
+  flex-wrap: wrap; /* allow wrapping on small screens*/
 }
 
 .message-input-container form {
@@ -108,14 +109,13 @@ textarea {
   border: 1px solid #c5c5d2;
   border-radius: 8px;
   padding: 0.5rem 0.75rem;
-  width: calc(100% - 20px);
+  width: 90%;
   resize: vertical;
   overflow: auto;
   margin: 0;
   margin-right: 10px;
   flex-grow: 1;
   padding: 8px 12px;
-  max-height: 32px;
   box-sizing: border-box; /* Include padding in the element's total dimensions */
 }
 
@@ -128,7 +128,7 @@ input[type="button"] {
   border-radius: 4px;
   text-align: center;
   cursor: pointer;
-  flex: 1;
+  flex-grow: 1;
   margin: 0 0.5rem;
 }
 
