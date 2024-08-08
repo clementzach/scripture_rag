@@ -45,8 +45,7 @@ h3 {
 }
 
 .chat-container {
-  max-width: 100%;
-  width: 90%;
+  max-width: 90%;
   margin: 0 auto;
   padding-top: 1rem;
   display: flex;
@@ -263,6 +262,8 @@ input[type="text"] {
 
 .message-role.user {
   align-self: flex-end;
+  text-align: right;
+  width: 100%
 }
 
 #send-btn {
