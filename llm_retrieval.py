@@ -25,7 +25,7 @@ def scriptures_from_verses(verses, scripture_dict):
         if sanitize_reference(v) in scripture_dict.keys():
             output_string += v + "\t" + scripture_dict[sanitize_reference(v)] + "\n"
         elif v.find("-") >=0:
-            if not (v.split(":")[1].split("-")[0].isdigit() and v.split(":")[1].split("-")[1].isdigit()):
+            if not (v.split(":")[1].split("-")[0].strip().isdigit() and v.split(":")[1].split("-")[1].strip().isdigit()):
                 continue
             cur_verse = int(v.split(":")[1].split("-")[0])
             last_verse = int(v.split(":")[1].split("-")[1])
