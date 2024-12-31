@@ -2,6 +2,7 @@ from config import OPENAI_API_KEY
 import os
 from openai import OpenAI
 import re
+from chroma_lookup import get_verses_chroma
 
 os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
 
@@ -52,11 +53,11 @@ def scriptures_from_verses(verses, scripture_dict):
     return output_string
     
         
-def get_scriptures_string(scripture_dict, question, generative_model):
+def get_scriptures_string(scripture_dict, question, generative_model, collection):
     verses = get_verses_if_asked(question, generative_model)
     output_string = scriptures_from_verses(verses, scripture_dict)
     if len(output_string) == 0:
-        verses = get_verse_references(question, generative_model)
+        verses = list(get_verse_references(question, generative_model)) + list(get_verses_chroma(question, collection))
         output_string = scriptures_from_verses(verses, scripture_dict)
     return output_string
 
