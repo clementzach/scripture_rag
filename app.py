@@ -19,6 +19,9 @@ from config import DATA_PATH
 
 import secrets
 
+from create_vector_store import get_chroma_collection
+from config import HYP_QUEST_COLLECTION_NAME, HYP_QUEST_EMBEDS_MODEL, HYP_QUEST_PATH, CHROMA_PATH, OPENAI_API_KEY, HYP_QUEST_ID_DELIM
+
 scripture_dict = get_all_scriptures(DATA_PATH)
 
 os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
@@ -41,6 +44,8 @@ sys_prompt = f"""
 chat_history = [
     {"role": "system", "content": sys_prompt},
 ]
+
+CHROMA_COLLECTION = get_chroma_collection(CHROMA_PATH, collection_name = HYP_QUEST_COLLECTION_NAME)
 
 def get_unique_id(response):
     unique_id = request.cookies.get('user_id')
@@ -76,7 +81,7 @@ def chat():
     chat_history = get_chat_history(unique_id)
     question = request.json["message"]
     chat_history.append({"role": "user", "content": question})
-    scriptures_string = get_scriptures_string(scripture_dict, question, GENERATIVE_MODEL)
+    scriptures_string = get_scriptures_string(scripture_dict, question, GENERATIVE_MODEL, CHROMA_COLLECTION)
     assistant_content = "Here are some scriptures that may be helpful:\n" + scriptures_string
     chat_history.append({"role": "assistant", "content": assistant_content})
     set_chat_history(unique_id, chat_history)

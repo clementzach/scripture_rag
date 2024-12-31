@@ -20,22 +20,24 @@ def get_all_scriptures(fp):
         scripture_dict[sanitize_reference(current_id)] = line.split("     ")[1]
     return scripture_dict
 
-def append_to_lists(sub_v, used_verses, chapters, verses, texts, scripture_dict):
+def append_to_lists(sub_v, used_verses, outputs, scripture_dict):
     """Append a reference to a few lists"""
-    texts.append(sub_v + "\t" + scripture_dict[sanitize_reference(sub_v)] + "\n")
-    chapters.append(sub_v.split(":")[0])
-    verses.append(sub_v.split(":")[1])
+    outputs['texts'].append(sub_v + "\t" + scripture_dict[sanitize_reference(sub_v)] + "\n")
+    outputs['chapters'].append(sub_v.split(":")[0])
+    outputs['verses'].append(sub_v.split(":")[1])
     used_verses.add(sanitize_reference(sub_v))
 
 def scriptures_from_verses(verses, scripture_dict):
     output_string = ""
     used_verses = set()
-    chapters = []
-    verses = []
-    texts = []
+    outputs = {
+            "chapters": [],
+            "verses": [],
+            "texts": []
+            }
     for v in verses:
         if (sanitize_reference(v) in scripture_dict.keys()) and (sanitize_reference(v) not in used_verses):
-            append_to_lists(v, used_verses, chapters, verses, texts, scripture_dict)
+            append_to_lists(v, used_verses, outputs, scripture_dict)
         elif v.find("-") >=0:
             if not (v.split(":")[1].split("-")[0].strip().isdigit() and v.split(":")[1].split("-")[1].strip().isdigit()):
                 continue
@@ -46,9 +48,9 @@ def scriptures_from_verses(verses, scripture_dict):
             while cur_verse <= last_verse:
                 sub_v = v.split(":")[0] + ":" + str(cur_verse)
                 if (sanitize_reference(sub_v) in scripture_dict.keys()) and (sanitize_reference(sub_v) not in used_verses):
-                    append_to_lists(sub_v, used_verses, chapters, verses, texts, scripture_dict)
+                    append_to_lists(sub_v, used_verses, outputs, scripture_dict)
                 cur_verse +=1
-    for ref in sorted(zip(chapters, verses, texts)):
+    for ref in sorted(zip(outputs['chapters'], outputs['verses'], outputs['texts'])):
         output_string += ref[2]
     return output_string
     
