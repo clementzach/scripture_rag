@@ -13,7 +13,7 @@ def add_to_collection_openai(hypothetical_question, collection, id_num, embeddin
     try:
         reference_only = (hypothetical_question.split(":")[0] + ":" + hypothetical_question.split(":")[1].split(" ")[0] )
         id_only = reference_only.replace(HYP_QUEST_ID_DELIM, "") + HYP_QUEST_ID_DELIM  + str(id_num)
-        question_only = hypothetical_question.replace(reference_only, "")
+        question_only = hypothetical_question.replace(reference_only, "", 1)
     except IndexError:
         return
     client = OpenAI()
@@ -23,7 +23,7 @@ def add_to_collection_openai(hypothetical_question, collection, id_num, embeddin
     ).data[0].embedding
     collection.add(ids = [id_only],
                    embeddings = [embedding],
-                       documents = [hypothetical_question])
+                       documents = [question_only])
 
 def main():
     collection = get_chroma_collection(CHROMA_PATH, collection_name = HYP_QUEST_COLLECTION_NAME)
