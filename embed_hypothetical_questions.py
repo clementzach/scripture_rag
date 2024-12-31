@@ -11,8 +11,9 @@ def add_to_collection_openai(hypothetical_question, collection, id_num, embeddin
     if (id_num % 1000) == 0:
         logger.info(f"Running for id {id_num}")
     try:
-        question_only = hypothetical_question.split(":")[1].split(" ")[1] ## each question starts with a chapter reference, and we want to chop that off so the embedings don't take it as input
-        id_only = (hypothetical_question.split(":")[0] + ":" + hypothetical_question.split(":")[1].split(" ")[0] ).replace(HYP_QUEST_ID_DELIM, "") + HYP_QUEST_ID_DELIM  + str(id_num)
+        reference_only = (hypothetical_question.split(":")[0] + ":" + hypothetical_question.split(":")[1].split(" ")[0] )
+        id_only = reference_only.replace(HYP_QUEST_ID_DELIM, "") + HYP_QUEST_ID_DELIM  + str(id_num)
+        question_only = hypothetical_question.replace(reference_only, "")
     except IndexError:
         return
     client = OpenAI()
