@@ -1,0 +1,32 @@
+## System-level unit file for ChromaDB FastAPI server
+## Place this file in your repo under services/, edit absolute paths below,
+## then copy to /etc/systemd/system/chroma.service and enable it.
+
+[Unit]
+Description=ChromaDB FastAPI server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# EDIT: set to your repo path (absolute)
+WorkingDirectory=/home/zacharyclement/scripture_rag
+
+# EDIT: set to your chroma data dir (absolute)
+Environment=CHROMA_PATH=/home/zacharyclement/scripture_rag/chroma_dir
+
+# Network bind
+Environment=CHROMA_SERVER_HOST=127.0.0.1
+Environment=CHROMA_SERVER_HTTP_PORT=8000
+
+# Run Chroma via the venv’s chroma binary (absolute path recommended)
+# EDIT: set venv bin path if different
+ExecStart=/usr/bin/env bash -lc '/home/zacharyclement/scripture_rag/ollama_env/bin/chroma run --path "${CHROMA_PATH}" --host "${CHROMA_SERVER_HOST}" --port "${CHROMA_SERVER_HTTP_PORT}"'
+
+Restart=on-failure
+RestartSec=5
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
+

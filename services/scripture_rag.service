@@ -1,0 +1,15 @@
+[Unit]
+Description=Flask Web Application Server using Gunicorn
+After=network.target
+
+[Service]
+User=zacharyclement
+Group=www-data
+WorkingDirectory=/home/zacharyclement/scripture_rag
+Environment="PATH=/home/zacharyclement/scripture_rag/ollama_env/bin"
+ExecStart=/bin/bash -c 'source /home/zacharyclement/scripture_rag/ollama_env/bin/activate; gunicorn -w 1 --bind unix:/tmp/my-server/ipc.sock wsgi:app'
+Restart=always
+MemoryMax=500M
+
+[Install]
+WantedBy=multi-user.target
