@@ -1,13 +1,20 @@
 [Unit]
 Description=Flask Web Application Server using Gunicorn
 After=network.target
+Requires=retrieval_api.service
+After=retrieval_api.service
 
 [Service]
 User=zacharyclement
 Group=www-data
 WorkingDirectory=/home/zacharyclement/scripture_rag
 Environment="PATH=/home/zacharyclement/scripture_rag/ollama_env/bin"
-ExecStart=/bin/bash -c 'source /home/zacharyclement/scripture_rag/ollama_env/bin/activate; gunicorn -w 1 --bind unix:/tmp/my-server/ipc.sock wsgi:app'
+Environment="RETRIEVAL_API_URL=http://127.0.0.1:8001"
+# Ensure socket directory exists before starting
+ExecStartPre=/usr/bin/env bash -lc 'mkdir -p /tmp/my-server'
+# Use the Flask app module path `app:app` and make the socket group-writable for nginx (www-data)
+ExecStart=/bin/bash -c 'source /home/zacharyclement/scripture_rag/ollama_env/bin/activate; \
+  gunicorn -w 2 --umask 007 --bind unix:/tmp/my-server/ipc.sock app:app'
 Restart=always
 MemoryMax=500M
 
