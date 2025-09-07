@@ -12,19 +12,16 @@ from flask import (
 )
 import openai
 import os
+import secrets
+import requests
+
 from config import OPENAI_API_KEY
 
-from llm_retrieval import get_scriptures_string, get_all_scriptures
-from config import DATA_PATH
-
-import secrets
-
-from create_vector_store import get_chroma_collection
-from config import HYP_QUEST_COLLECTION_NAME, HYP_QUEST_EMBEDS_MODEL, HYP_QUEST_PATH, CHROMA_PATH, OPENAI_API_KEY, HYP_QUEST_ID_DELIM
-
-scripture_dict = get_all_scriptures(DATA_PATH)
-
+# Configure OpenAI key for downstream calls
 os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
+
+# Retrieval API base URL (FastAPI service)
+RETRIEVAL_API_URL = os.environ.get("RETRIEVAL_API_URL", "http://127.0.0.1:8001")
 
 GENERATIVE_MODEL = "gpt-4o-mini"
 
@@ -45,7 +42,29 @@ chat_history = [
     {"role": "system", "content": sys_prompt},
 ]
 
-CHROMA_COLLECTION = get_chroma_collection(CHROMA_PATH, collection_name = HYP_QUEST_COLLECTION_NAME)
+def check_retrieval_health_or_fail():
+    try:
+        resp = requests.get(f"{RETRIEVAL_API_URL}/health", timeout=5)
+        resp.raise_for_status()
+    except Exception as e:
+        raise RuntimeError(f"Retrieval API unavailable at {RETRIEVAL_API_URL}") from e
+
+check_retrieval_health_or_fail()
+
+def fetch_scriptures(question: str, model: str) -> str:
+    """Call the FastAPI retrieval service to get scriptures string."""
+    try:
+        resp = requests.post(
+            f"{RETRIEVAL_API_URL}/retrieve",
+            json={"question": question, "generative_model": model},
+            timeout=30,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        return data.get("scriptures_string", "")
+    except Exception as e:
+        app.logger.exception("Error calling retrieval API: %s", e)
+        return ""
 
 def get_unique_id(response):
     unique_id = request.cookies.get('user_id')
@@ -81,7 +100,7 @@ def chat():
     chat_history = get_chat_history(unique_id)
     question = request.json["message"]
     chat_history.append({"role": "user", "content": question})
-    scriptures_string = get_scriptures_string(scripture_dict, question, GENERATIVE_MODEL, CHROMA_COLLECTION)
+    scriptures_string = fetch_scriptures(question, GENERATIVE_MODEL)
     assistant_content = "Here are some scriptures that may be helpful:\n" + scriptures_string
     chat_history.append({"role": "assistant", "content": assistant_content})
     set_chat_history(unique_id, chat_history)
@@ -140,7 +159,7 @@ def logout():
     # remove the username from the session if it's there
     session.pop('username', None)
     session.pop('chat_history', None)
-    return redirect(url_for('index'))@app.route('/logout')
+    return redirect(url_for('index'))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():

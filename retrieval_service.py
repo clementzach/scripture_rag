@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from typing import Optional
 import os
 import chromadb
+import logging
 
 # Local imports
 from config import (
@@ -48,6 +49,9 @@ app = FastAPI(title="Scripture Retrieval Service", version="1.0.0")
 SCRIPTURE_DICT = None
 CHROMA_COLLECTION = None
 
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=os.environ.get("LOG_LEVEL", "INFO"))
+
 
 def init_chroma_collection():
     """Initialize and return a Chroma collection for hypothetical questions (if configured)."""
@@ -86,16 +90,17 @@ def health() -> dict:
 def retrieve(req: RetrieveRequest):
     if SCRIPTURE_DICT is None or CHROMA_COLLECTION is None:
         raise HTTPException(status_code=503, detail="Service not initialized")
-
-    scriptures_string = get_scriptures_string(
-        scripture_dict=SCRIPTURE_DICT,
-        question=req.question,
-        generative_model=req.generative_model or "gpt-4o-mini",
-        collection=CHROMA_COLLECTION,
-    )
-
-    return RetrieveResponse(scriptures_string=scriptures_string)
+    try:
+        scriptures_string = get_scriptures_string(
+            scripture_dict=SCRIPTURE_DICT,
+            question=req.question,
+            generative_model=req.generative_model or "gpt-4o-mini",
+            collection=CHROMA_COLLECTION,
+        )
+        return RetrieveResponse(scriptures_string=scriptures_string)
+    except Exception as e:
+        logger.exception("Error during retrieval for question: %s", req.question)
+        raise HTTPException(status_code=502, detail=f"Retrieval failed: {e}")
 
 
 # For local debugging: `uvicorn retrieval_service:app --reload --port 8001`
-
