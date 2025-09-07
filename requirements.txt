@@ -4,3 +4,5 @@ openai
 #langchain-chroma 
 ollama 
 chromadb
+fastapi
+uvicorn
