@@ -1,3 +1,5 @@
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 @font-face {
   font-family: "ColfaxAI";
   src:
@@ -16,9 +18,7 @@
   font-style: normal;
 }
 
-body,
-input {
-  line-height: 24px;
+body, input {
   color: #353740;
   font-family: "ColfaxAI", Helvetica, sans-serif;
 }
@@ -27,41 +27,28 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-}
-
-.icon {
-  width: 34px;
-}
-
-h3 {
-  font-size: 32px;
-  line-height: 40px;
-  font-weight: bold;
-  color: #202123;
-  margin: 16px 0 40px;
+  overflow-x: hidden;
 }
 
 .chat-container {
-  max-width: 600px;
-  width: 100%;
+  max-width: 90%;
   margin: 0 auto;
-  padding-top: 20px;
+  padding: 1rem 0;
   display: flex;
   flex-direction: column;
   align-items: center;
+  overflow-y: auto;
   padding-bottom: 160px;
   margin-bottom: 20px;
-  overflow: auto;
 }
 
-.user-message,
-.assistant-message {
-  padding: 12px 16px;
+.user-message, .assistant-message {
+  padding: 0.75rem 1rem;
   border-radius: 4px;
-  margin-bottom: 8px;
+  margin-bottom: 0.5rem;
   max-width: 80%;
   word-wrap: break-word;
-  font-size: 16px;
+  font-size: 1.5rem;
 }
 
 .user-message {
@@ -74,77 +61,54 @@ h3 {
   background-color: #f4a460;
 }
 
+.message-input-container, form {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 80%;
+}
+
 .message-input-container {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 20px;
+  padding: 1rem;
   background: #fff;
-  display: flex;
-  justify-content: center;
-  height: auto;
   box-sizing: border-box;
-  align-items: start;
+  gap: 10px;
 }
 
-.message-input-container form {
-  display: flex; /* Use flexbox to layout children */
-  align-items: center; /* Align items vertically */
-  width: 100%; /* Take full width to accommodate children */
-}
 
-form {
-  max-width: 600px;
-  width: 100%;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
+/* Default style for desktop or larger screens */
 textarea {
   border: 1px solid #c5c5d2;
   border-radius: 8px;
-  margin-bottom: 24px;
-  width: calc(100% - 20px);
-  resize: vertical;
+  padding: 8px 12px;
+  resize: none;
   overflow: auto;
   margin: 0;
-  margin-right: 10px;
-  flex-grow: 1;
-  padding: 8px 12px;
-  max-height: 32px;
-  box-sizing: border-box; /* Include padding in the element's total dimensions */
+  flex-grow: 3;
+  font-size: 16px;
 }
 
-input[type="submit"],
-input[type="button"] {
-  padding: 12px 16px;
+#send-btn, textarea {
+height: 5vh;
+}
+
+input[type="submit"], input[type="button"] {
   color: #808080;
-  background-color: #cd5c5c
+  background-color: #cd5c5c;
   border: none;
   border-radius: 4px;
   text-align: center;
   cursor: pointer;
-  flex: 1;
-  margin: 0 2px;
+  margin: 0;
+  flex-grow: 1;
 }
 
 input[type="submit"] {
   flex-grow: 4;
-}
-
-input[type="button"] {
-  flex-grow: 1;
-  background-color: #cd5c5c;
-}
-
-input[type="text"] {
-  padding: 12px 16px;
-  border: 1px solid #10a37f;
-  border-radius: 4px;
-  margin-bottom: 24px;
 }
 
 ::placeholder {
@@ -163,8 +127,8 @@ input[type="text"] {
 }
 
 .typing-indicator {
-  margin-left: 4px;
-  font-size: 16px; /* Adjust size as needed */
+  margin-left: 0.25rem;
+  font-size: 16px;
 }
 
 .typing-indicator::after {
@@ -173,8 +137,7 @@ input[type="text"] {
 }
 
 @keyframes typing {
-  0%,
-  100% {
+  0%, 100% {
     content: "•";
   }
   33% {
@@ -187,126 +150,69 @@ input[type="text"] {
 
 .button-group {
   display: flex;
-  align-items: center; /* Add this to vertically center the elements */
-  justify-content: space-between; /* Adjust as needed */
-}
-
-.file-upload-btn {
-  background: #007bff;
-  color: white;
-  padding: 8px 12px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 16px;
-}
-
-.file-upload-btn:hover {
-  background: #0056b3;
-}
-
-.file-upload-input {
-  display: none; /* Hide the actual input */
-}
-
-#upload-banner {
-  display: none;
-  position: fixed;
-  top: 0;
-  width: 100%;
-  background-color: green;
-  color: white;
-  text-align: center;
-  padding: 10px;
-  z-index: 1000;
+  align-items: center;
+  justify-content: space-between;
 }
 
 #ids-container {
-  font-size: 9px;
-  margin-bottom: 20px;
+  font-size: 0.75rem;
+  margin-bottom: 1.25rem;
   text-align: center;
 }
 
-/* The Modal (background) */
 .modal {
-  display: none; /* Hidden by default */
-  position: fixed; /* Stay in place */
-  z-index: 1; /* Sit on top */
+  display: none;
+  position: fixed;
+  z-index: 1;
   left: 0;
   top: 0;
-  width: 100%; /* Full width */
-  height: 100%; /* Full height */
-  overflow: auto; /* Enable scroll if needed */
-  background-color: rgb(0, 0, 0); /* Fallback color */
-  background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.4);
 }
 
-/* Modal Content */
 .modal-content {
   background-color: #fefefe;
-  margin: 15% auto; /* 15% from the top and centered */
-  padding: 20px;
+  margin: 15% auto;
+  padding: 1.25rem;
   border: 1px solid #888;
-  width: 80%; /* Could be more or less, depending on screen size */
+  width: 90%;
 }
 
-/* The Close Button */
-.close {
-  color: #aaa;
-  float: right;
-  font-size: 28px;
-  font-weight: bold;
-}
-
-.close:hover,
-.close:focus {
+.close:hover, .close:focus {
   color: black;
   text-decoration: none;
   cursor: pointer;
 }
 
-.file-icon {
-  cursor: pointer;
-  color: #000;
-  display: inline-block;
-  font-size: 24px;
-  padding-left: 5px;
-}
-
 .header {
-  display: flex; /* Use flexbox layout */
-  align-items: center; /* Center items vertically */
-  justify-content: flex-start; /* Align items to the start of the container */
+  flex-wrap: wrap;
+  display: flex;
+  font-size: 1.4rem;
+  align-items: center;
+  justify-content: flex-start;
   background-color: white;
-  width: 100%; /* Ensure the header spans the full width */
-  padding: 10px 0; /* Add some vertical padding */
-}
-
-.header img {
-  height: 20px;
-  margin-right: 10px;
-}
-
-.header .demo-text {
-  font-size: 15px;
-  font-weight: bold;
+  width: 95%;
+  padding: 0.625rem 0;
 }
 
 .message-role {
   align-self: flex-start;
-  font-size: 12pt;
+  font-size: 1.75rem;
   color: #000000;
   margin-bottom: 4px;
 }
 
 .message-role.user {
   align-self: flex-end;
+  text-align: right;
+  width: 100%;
 }
 
 #send-btn {
-  width: 42px;
-  height: 32px;
-  border-radius: 4px;
+  width: 2.625rem;
+  border-radius: 8px;
   border: 1px solid #c5c5d2;
   background-color: #8b4513;
   color: #fff;
@@ -315,3 +221,18 @@ input[type="text"] {
   justify-content: center;
   align-items: center;
 }
+
+
+/* Media query for mobile devices (screens 768px or less) */
+@media screen and (((min-resolution: 2dppx) and (max-width: 1000px)) or (max-width: 500px)){
+  textarea {
+    font-size: 46px;
+  }
+  #send-btn, textarea {
+	  height: 15vh;
+  }
+  .message-input-container, form {
+  width: 100%;
+	}
+}
+

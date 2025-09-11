@@ -4,7 +4,7 @@ import ollama
 import chromadb
 from create_vector_store import EMBEDDINGS_MODEL, CHROMA_PATH, COLLECTION_NAME
 from openai import OpenAI
-from config import OPENAI_API_KEY
+from config import OPENAI_API_KEY, CHROMA_USE_HTTP, CHROMA_SERVER_HOST, CHROMA_SERVER_HTTP_PORT
 
 os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
 
@@ -13,7 +13,10 @@ GENERATIVE_MODEL = "gpt-4o-mini"
 
 def get_clients():
     client = ollama.Client()
-    chroma_client = chromadb.PersistentClient(path=CHROMA_PATH)
+    if CHROMA_USE_HTTP:
+        chroma_client = chromadb.HttpClient(host=CHROMA_SERVER_HOST, port=CHROMA_SERVER_HTTP_PORT)
+    else:
+        chroma_client = chromadb.PersistentClient(path=CHROMA_PATH)
     collection = chroma_client.get_or_create_collection(name=COLLECTION_NAME)
     return (client, collection)
 

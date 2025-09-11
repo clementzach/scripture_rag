@@ -1,7 +1,4 @@
-python3 -m venv ollama_env
 
-## Download required packages
-source ollama_env/bin/activate
 pip install -r requirements.txt
 
 ## Download the raw data

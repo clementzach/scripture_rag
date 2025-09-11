@@ -1,0 +1,28 @@
+[Unit]
+Description=Flask Web Application Server using Gunicorn
+After=network-online.target retrieval_api.service
+Wants=network-online.target
+Requires=retrieval_api.service
+
+[Service]
+User=zacharyclement
+Group=www-data
+WorkingDirectory=/home/zacharyclement/scripture_rag
+Environment="PATH=/home/zacharyclement/scripture_rag/ollama_env/bin"
+Environment="RETRIEVAL_API_URL=http://127.0.0.1:8001"
+
+# systemd will create /run/scripture_rag with these perms every start
+RuntimeDirectory=scripture_rag
+RuntimeDirectoryMode=0775
+
+# (remove the old ExecStartPre line entirely)
+
+# Bind Gunicorn to a socket in /run; keep group-writable
+ExecStart=/bin/bash -lc 'source /home/zacharyclement/scripture_rag/ollama_env/bin/activate; \
+  gunicorn -w 2 --umask 007 --bind unix:/run/scripture_rag/gunicorn.sock app:app'
+
+Restart=always
+MemoryMax=500M
+
+[Install]
+WantedBy=multi-user.target

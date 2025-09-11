@@ -1,0 +1,33 @@
+## System-level unit file for the Scripture Retrieval FastAPI service
+## Place this file in your repo under services/, edit absolute paths below,
+## then copy to /etc/systemd/system/retrieval_api.service and enable it.
+
+[Unit]
+Description=Scripture Retrieval FastAPI (Gunicorn + Uvicorn workers)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# EDIT: set to your repo path (absolute)
+WorkingDirectory=/home/zacharyclement/scripture_rag
+
+# Optionally set environment variables here or via an EnvironmentFile
+# Environment=OPENAI_API_KEY=YOUR_KEY
+# EnvironmentFile=/etc/default/retrieval_api
+
+# Use the venv’s gunicorn binary with uvicorn workers
+# EDIT: set venv bin path if different
+ExecStart=/usr/bin/env bash -lc '/home/zacharyclement/scripture_rag/ollama_env/bin/gunicorn \
+  -k uvicorn.workers.UvicornWorker \
+  -w 2 \
+  -b 127.0.0.1:8001 \
+  retrieval_service:app'
+
+Restart=on-failure
+RestartSec=5
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
+
