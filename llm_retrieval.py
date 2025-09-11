@@ -24,7 +24,7 @@ def append_to_lists(sub_v, used_verses, outputs, scripture_dict):
     """Append a reference to a few lists"""
     outputs['texts'].append(sub_v + "\t" + scripture_dict[sanitize_reference(sub_v)] + "\n")
     outputs['chapters'].append(sub_v.split(":")[0])
-    outputs['verses'].append(sub_v.split(":")[1])
+    outputs['verses'].append(int(sub_v.split(":")[1]))
     used_verses.add(sanitize_reference(sub_v))
 
 def scriptures_from_verses(verses, scripture_dict):
