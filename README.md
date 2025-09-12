@@ -11,34 +11,24 @@ To create the feature store which will be used in RAG, run `create_embeddings.py
 
 Finally, once the above steps are done, to ask a question about the scriptures run `answer_scripture_questions.py`.
 
-## Using a standalone Chroma FastAPI server
+## LangGraph Agent (New)
 
-You can run ChromaDB as its own FastAPI server and point the code at it:
+This codebase now includes a LangGraph-based agent that structures the flow as:
 
-- Start the Chroma server (ensure `chromadb` is installed in your venv):
-  - `./run_chroma_server.sh`
-  - or manually: `chroma run --path chroma_dir --host 0.0.0.0 --port 8000`
+- Suggest: generate related questions to explore before retrieval.
+- Retrieve: propose relevant scripture references and fetch their text.
+- Verify: judge whether each retrieved reference is relevant and filter out the rest.
 
-- Configure clients to use the server by editing `config.py`:
-  - `CHROMA_USE_HTTP = True`
-  - `CHROMA_SERVER_HOST = "localhost"` (or your host/IP)
-  - `CHROMA_SERVER_HTTP_PORT = 8000`
+Files:
+- `agents/state.py`: typed state for the graph.
+- `agents/tools.py`: tools for follow-up question generation and relevance verification.
+- `agents/graph.py`: builds the LangGraph and a helper `run_preanswer` entry point.
 
-With this configuration, `create_vector_store.py` and `answer_scripture_questions.py` connect to the Chroma server via REST and store/query vectors on that server.
+App integration:
+- `app.py` now uses the agent for suggestions, retrieval, and verification (if `langgraph` is installed). It still streams the final answer with OpenAI as before.
 
-## Retrieval FastAPI Service
+Install:
+- Add `langgraph` to your environment: `pip install -r requirements.txt`
 
-This repo now includes a standalone FastAPI microservice that wraps the scripture retrieval logic from `llm_retrieval.py`.
-
-- Start the service (ensure dependencies are installed):
-  - `uvicorn retrieval_service:app --host 0.0.0.0 --port 8001`
-
-- Endpoint:
-  - `POST /retrieve`
-    - Request body: `{ "question": "<your question>", "generative_model": "gpt-4o-mini" }`
-    - Response: `{ "scriptures_string": "<tab-separated scripture refs and text>" }`
-
-- Health check:
-  - `GET /health` -> `{ "status": "ok" }`
-
-The service initializes the scriptures index and a Chroma collection on startup. It supports using a standalone Chroma server when configured via `config.py` (`CHROMA_USE_HTTP`, `CHROMA_SERVER_HOST`, `CHROMA_SERVER_HTTP_PORT`).
+Notes:
+- If `langgraph` is not installed at runtime, the app falls back to the original retrieval behavior.

@@ -12,22 +12,30 @@ from flask import (
 )
 import openai
 import os
-import secrets
-import requests
-
 from config import OPENAI_API_KEY
 
-# Configure OpenAI key for downstream calls
-os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
+from llm_retrieval import get_scriptures_string, get_all_scriptures
+from config import DATA_PATH
 
-# Retrieval API base URL (FastAPI service)
-RETRIEVAL_API_URL = os.environ.get("RETRIEVAL_API_URL", "http://127.0.0.1:8001")
+import secrets
+
+scripture_dict = get_all_scriptures(DATA_PATH)
+
+os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
 
 GENERATIVE_MODEL = "gpt-4o-mini"
 
 client = openai.OpenAI()
 
 app = Flask(__name__)
+
+
+# --- LangGraph agent wiring ---
+try:
+    from agents.graph import build_rag_graph, run_preanswer
+    rag_graph = build_rag_graph(scripture_dict, GENERATIVE_MODEL)
+except Exception as _e:
+    rag_graph = None  # Fallback if langgraph unavailable at runtime
 
 
 
@@ -41,30 +49,6 @@ sys_prompt = f"""
 chat_history = [
     {"role": "system", "content": sys_prompt},
 ]
-
-def check_retrieval_health_or_fail():
-    try:
-        resp = requests.get(f"{RETRIEVAL_API_URL}/health", timeout=5)
-        resp.raise_for_status()
-    except Exception as e:
-        raise RuntimeError(f"Retrieval API unavailable at {RETRIEVAL_API_URL}") from e
-
-check_retrieval_health_or_fail()
-
-def fetch_scriptures(question: str, model: str) -> str:
-    """Call the FastAPI retrieval service to get scriptures string."""
-    try:
-        resp = requests.post(
-            f"{RETRIEVAL_API_URL}/retrieve",
-            json={"question": question, "generative_model": model},
-            timeout=30,
-        )
-        resp.raise_for_status()
-        data = resp.json()
-        return data.get("scriptures_string", "")
-    except Exception as e:
-        app.logger.exception("Error calling retrieval API: %s", e)
-        return ""
 
 def get_unique_id(response):
     unique_id = request.cookies.get('user_id')
@@ -100,8 +84,49 @@ def chat():
     chat_history = get_chat_history(unique_id)
     question = request.json["message"]
     chat_history.append({"role": "user", "content": question})
-    scriptures_string = fetch_scriptures(question, GENERATIVE_MODEL)
-    assistant_content = "Here are some scriptures that may be helpful:\n" + scriptures_string
+    # Use agent graph for suggestions + retrieval + verification when available
+    suggestions_text = ""
+    verified_scriptures_string = ""
+    verification_note = ""
+
+    if rag_graph is not None:
+        state = run_preanswer(rag_graph, question)
+        # Suggestions
+        suggestions = state.get("suggestions", [])
+        if suggestions:
+            suggestions_text = (
+                "Before we dive in, consider these related questions:\n- "
+                + "\n- ".join(suggestions)
+                + "\n\n"
+            )
+        # Build scriptures string from verified references
+        refs = state.get("references", [])
+        verified_scriptures_string = "".join([f"{r['ref']}\t{r['text']}\n" for r in refs])
+        if not verified_scriptures_string:
+            # Fallback to direct retrieval if none remained after verification
+            verified_scriptures_string = get_scriptures_string(scripture_dict, question, GENERATIVE_MODEL)
+
+        # Verification note
+        ver = state.get("verification") or {}
+        if ver:
+            if not ver.get("all_relevant", True):
+                irrel = ver.get("irrelevant_refs", [])
+                if irrel:
+                    verification_note = (
+                        "\n(Note: Filtered out references judged less relevant: "
+                        + ", ".join(irrel)
+                        + ")\n"
+                    )
+    else:
+        # No LangGraph available: use existing retrieval behavior
+        verified_scriptures_string = get_scriptures_string(scripture_dict, question, GENERATIVE_MODEL)
+
+    assistant_content = (
+        (suggestions_text if suggestions_text else "")
+        + "Here are some scriptures that may be helpful:\n"
+        + verified_scriptures_string
+        + (verification_note if verification_note else "")
+    )
     chat_history.append({"role": "assistant", "content": assistant_content})
     set_chat_history(unique_id, chat_history)
     
@@ -159,7 +184,7 @@ def logout():
     # remove the username from the session if it's there
     session.pop('username', None)
     session.pop('chat_history', None)
-    return redirect(url_for('index'))
+    return redirect(url_for('index'))@app.route('/logout')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():

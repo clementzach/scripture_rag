@@ -7,22 +7,19 @@
       href="{{ url_for('static', filename='main.css') }}"
     />
   </head>
+  <header>Scripture AI chatbot--the scriptures cited should be authentic, but you may want to take any interpretations with a grain of salt.</header>
   <body>
     <div class="header">
-
-  <header>Scripture AI chatbot--the scriptures cited should be authentic, but you may want to take any interpretations with a grain of salt.</header>
     </div>
     <div class="chat-container">
-        <div class="message-role assistant">Scripture Helper</div>
-        <div class="assistant-message">Ask me any question about the scriptures!<br>You can ask:<br>"What does it mean to have faith?"<br>"Who was Jonah?"<br>"Show me Alma 32:1-3"</div>
       {% for message in chat_history %}
-      <div class="message-role {{ 'user' if message.role == 'user' else 'assistant' }}">
+      <div class="message-role {{ 'user' if message.role == 'user' else '' }}">
         {{ message.role.capitalize() if message.role == 'user' else 'Scripture Helper' }}
       </div>
       <div
         class="{{ 'user-message' if message.role == 'user' else 'assistant-message' }}"
       >
-        {{ message.content }}
+        {{ message.content if message.role != 'system' else 'Ask me any question about the scriptures!' }}
       </div>
       {% endfor %}
     </div>
@@ -32,6 +29,7 @@
           name="message"
           id="message-input"
           placeholder="Enter a Scripture Question..."
+          required
         ></textarea>
         <div class="button-group">
           <button type="submit" id="send-btn">&#x2191;</button>

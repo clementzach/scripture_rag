@@ -18,37 +18,51 @@
   font-style: normal;
 }
 
-body, input {
+body,
+input {
+  line-height: 1.5;
   color: #353740;
   font-family: "ColfaxAI", Helvetica, sans-serif;
+  margin: 0;
+  padding: 0;
 }
 
 body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  overflow-x: hidden;
+}
+
+h3 {
+  font-size: 2rem;
+  line-height: 2.5rem;
+  font-weight: bold;
+  color: #202123;
+  margin: 1rem 0 2.5rem;
 }
 
 .chat-container {
-  max-width: 90%;
+  max-width: 100%;
+  width: 90%;
   margin: 0 auto;
-  padding: 1rem 0;
+  padding-top: 1rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  overflow-y: auto;
   padding-bottom: 160px;
   margin-bottom: 20px;
+  overflow-y: auto; /* Ensure vertical scrolling */
+  height: 80vh; /* Adjust height as needed */
 }
 
-.user-message, .assistant-message {
+.user-message,
+.assistant-message {
   padding: 0.75rem 1rem;
   border-radius: 4px;
   margin-bottom: 0.5rem;
   max-width: 80%;
   word-wrap: break-word;
-  font-size: 1.5rem;
+  font-size: 1rem;
 }
 
 .user-message {
@@ -61,13 +75,6 @@ body {
   background-color: #f4a460;
 }
 
-.message-input-container, form {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 80%;
-}
-
 .message-input-container {
   position: fixed;
   bottom: 0;
@@ -75,40 +82,70 @@ body {
   right: 0;
   padding: 1rem;
   background: #fff;
+  display: flex;
+  justify-content: center;
+  height: auto;
   box-sizing: border-box;
-  gap: 10px;
+  align-items: start;
 }
 
+.message-input-container form {
+  display: flex; /* Use flexbox to layout children */
+  align-items: center; /* Align items vertically */
+  width: 100%; /* Take full width to accommodate children */
+}
 
-/* Default style for desktop or larger screens */
+form {
+  max-width: 600px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 textarea {
   border: 1px solid #c5c5d2;
   border-radius: 8px;
-  padding: 8px 12px;
-  resize: none;
+  padding: 0.5rem 0.75rem;
+  width: calc(100% - 20px);
+  resize: vertical;
   overflow: auto;
   margin: 0;
-  flex-grow: 3;
-  font-size: 16px;
+  margin-right: 10px;
+  flex-grow: 1;
+  padding: 8px 12px;
+  max-height: 32px;
+  box-sizing: border-box; /* Include padding in the element's total dimensions */
 }
 
-#send-btn, textarea {
-height: 5vh;
-}
-
-input[type="submit"], input[type="button"] {
+input[type="submit"],
+input[type="button"] {
+  padding: 0.5rem 1rem;
   color: #808080;
-  background-color: #cd5c5c;
+  background-color: #cd5c5c
   border: none;
   border-radius: 4px;
   text-align: center;
   cursor: pointer;
-  margin: 0;
-  flex-grow: 1;
+  flex: 1;
+  margin: 0 0.5rem;
 }
 
 input[type="submit"] {
   flex-grow: 4;
+}
+
+input[type="button"] {
+  flex-grow: 1;
+  background-color: #cd5c5c;
+}
+
+input[type="text"] {
+  padding: 0.75rem 1rem;
+  border: 1px solid #10a37f;
+  border-radius: 4px;
+  width: calc(100% - 80px);
 }
 
 ::placeholder {
@@ -128,7 +165,7 @@ input[type="submit"] {
 
 .typing-indicator {
   margin-left: 0.25rem;
-  font-size: 16px;
+  font-size: 1rem; /* Adjust size as needed */
 }
 
 .typing-indicator::after {
@@ -137,7 +174,8 @@ input[type="submit"] {
 }
 
 @keyframes typing {
-  0%, 100% {
+  0%,
+  100% {
     content: "•";
   }
   33% {
@@ -150,9 +188,10 @@ input[type="submit"] {
 
 .button-group {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  align-items: center; /* Add this to vertically center the elements */
+  justify-content: space-between; /* Adjust as needed */
 }
+
 
 #ids-container {
   font-size: 0.75rem;
@@ -160,59 +199,75 @@ input[type="submit"] {
   text-align: center;
 }
 
+/* The Modal (background) */
 .modal {
-  display: none;
-  position: fixed;
-  z-index: 1;
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
   left: 0;
   top: 0;
-  width: 100%;
-  height: 100%;
-  overflow: auto;
-  background-color: rgba(0, 0, 0, 0.4);
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0, 0, 0); /* Fallback color */
+  background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
 }
 
+/* Modal Content */
 .modal-content {
   background-color: #fefefe;
-  margin: 15% auto;
+  margin: 15% auto; /* 15% from the top and centered */
   padding: 1.25rem;
   border: 1px solid #888;
-  width: 90%;
+  width: 90%; /* Could be more or less, depending on screen size */
 }
 
-.close:hover, .close:focus {
+/* The Close Button */
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 1.75rem;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
   color: black;
   text-decoration: none;
   cursor: pointer;
 }
 
+
 .header {
-  flex-wrap: wrap;
-  display: flex;
-  font-size: 1.4rem;
-  align-items: center;
-  justify-content: flex-start;
+  display: flex; /* Use flexbox layout */
+  align-items: center; /* Center items vertically */
+  justify-content: flex-start; /* Align items to the start of the container */
   background-color: white;
-  width: 95%;
-  padding: 0.625rem 0;
+  width: 100%; /* Ensure the header spans the full width */
+  padding: 0.625rem 0; /* Add some vertical padding */
 }
+
+.header img {
+  height: 1.25rem;
+  margin-right: 0.625rem;
+}
+
 
 .message-role {
   align-self: flex-start;
-  font-size: 1.75rem;
+  font-size: 0.75rem;
   color: #000000;
   margin-bottom: 4px;
 }
 
 .message-role.user {
   align-self: flex-end;
-  text-align: right;
-  width: 100%;
 }
 
 #send-btn {
   width: 2.625rem;
-  border-radius: 8px;
+  height: 2rem;
+  border-radius: 4px;
   border: 1px solid #c5c5d2;
   background-color: #8b4513;
   color: #fff;
@@ -220,19 +275,5 @@ input[type="submit"] {
   display: flex;
   justify-content: center;
   align-items: center;
-}
-
-
-/* Media query for mobile devices (screens 768px or less) */
-@media screen and (((min-resolution: 2dppx) and (max-width: 1000px)) or (max-width: 500px)){
-  textarea {
-    font-size: 46px;
-  }
-  #send-btn, textarea {
-	  height: 15vh;
-  }
-  .message-input-container, form {
-  width: 100%;
-	}
 }
 

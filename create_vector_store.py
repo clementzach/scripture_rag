@@ -1,15 +1,7 @@
 import os
 import chromadb
 import ollama
-from config import (
-    DATA_PATH,
-    EMBEDDINGS_MODEL,
-    CHROMA_PATH,
-    COLLECTION_NAME,
-    CHROMA_USE_HTTP,
-    CHROMA_SERVER_HOST,
-    CHROMA_SERVER_HTTP_PORT,
-)
+from config import DATA_PATH, EMBEDDINGS_MODEL, CHROMA_PATH, COLLECTION_NAME
 NUM_VERSES_IN_DOC = 4
 
 def parse_scriptures(fp):
@@ -41,11 +33,8 @@ def parse_scriptures(fp):
 def get_chroma_collection(chroma_path):
     """Get the relevant collection"""
     os.makedirs(chroma_path, exist_ok = True)
-    # Initialize the chroma client (HTTP server or local persistence)
-    if CHROMA_USE_HTTP:
-        chroma_client = chromadb.HttpClient(host=CHROMA_SERVER_HOST, port=CHROMA_SERVER_HTTP_PORT)
-    else:
-        chroma_client = chromadb.PersistentClient(path=chroma_path)
+    ## Initialize the chroma client
+    chroma_client = chromadb.PersistentClient(path=chroma_path)
     ## Get the collection name
     collection = chroma_client.get_or_create_collection(name=COLLECTION_NAME)
     return collection

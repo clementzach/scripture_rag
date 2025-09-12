@@ -1,8 +1,6 @@
 flask
 openai
-#llama-index-embeddings-openai 
-#langchain-chroma 
+llama-index-embeddings-openai 
+langchain-chroma 
 ollama 
-chromadb
-fastapi
-uvicorn
+langgraph>=0.2.0
